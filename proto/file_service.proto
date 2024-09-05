@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package fileservice;
+
+option go_package = "Fileservice/";
+
+message FileData {
+  bytes chunk = 1;       
+  string fileId = 2;
+  int32 chunkTh = 3;
+}
+
+message FileUploadResponse {
+   string message = 1;
+   bool success = 2;
+}
+
+enum FileType {
+   image = 0;
+   document = 1;
+   media = 2;
+}
+
+message CreateFileRequest {
+   string fileName = 1;
+   int64 fileSize = 2;
+   FileType fileType = 3;
+}
+message CreateFileResponse {
+   string uuid = 1;
+}
+
+service UploadFile {
+  rpc CreateFile(CreateFileRequest) returns (CreateFileResponse);
+  // Send a single file
+  rpc UploadFile(stream FileData) returns (FileUploadResponse);
+}
