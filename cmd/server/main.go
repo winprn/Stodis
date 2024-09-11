@@ -6,8 +6,10 @@ import (
 	"io"
 	"log"
 	"net"
+	"os"
 
 	"github.com/stodis/stodis/api/protobuf/services/fileservice" // Import the package where your generated files are located
+	"github.com/stodis/stodis/internal/discord"
 
 	"google.golang.org/grpc"
 )
@@ -52,6 +54,13 @@ func main() {
 
 	// Create a new gRPC server
 	s := grpc.NewServer()
+	token := os.Getenv("DISCORD_BOT_TOKEN")
+	disc, err := discord.NewBot(discord.NewBotConfig(token))
+	if err != nil {
+		log.Fatalf("failed to create discord bot: %v", err)
+	}
+
+	_ = discord.NewDiscordFileService(disc, "1278013883973632071")
 
 	// Register the server with the gRPC server
 	fileservice.RegisterUploadFileServer(s, &server{})
