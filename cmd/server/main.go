@@ -49,7 +49,7 @@ func main() {
 		port = "50051"
 	}
 
-	lis, err := net.Listen("tcp", port)
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
@@ -61,7 +61,7 @@ func main() {
 	fileservice.RegisterUploadFileServer(s, &server{})
 
 	// Start the server
-	fmt.Println("Server is running on port ", port)
+	fmt.Println("Server is running on port", port)
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
