@@ -7,10 +7,8 @@ import (
 	"log"
 	"net"
 	"os"
-	"stodis/api/protobuf/services/fileservice" // Import the package where your generated files are located
 
-	"github.com/stodis/stodis/api/protobuf/services/fileservice" // Import the package where your generated files are located
-
+	"github.com/stodis/stodis/api/protobuf/services/fileservice"
 	"google.golang.org/grpc"
 )
 
