@@ -10,6 +10,7 @@ import (
 
 	"github.com/stodis/stodis/api/protobuf/services/fileservice"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 type server struct {
@@ -59,6 +60,7 @@ func main() {
 
 	// Register the server with the gRPC server
 	fileservice.RegisterUploadFileServer(s, &server{})
+	reflection.Register(s)
 
 	// Start the server
 	fmt.Println("Server is running on port", port)
