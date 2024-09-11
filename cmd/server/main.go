@@ -9,6 +9,8 @@ import (
 	"os"
 	"stodis/api/protobuf/services/fileservice" // Import the package where your generated files are located
 
+	"github.com/stodis/stodis/api/protobuf/services/fileservice" // Import the package where your generated files are located
+
 	"google.golang.org/grpc"
 )
 
@@ -25,7 +27,7 @@ func (s *server) CreateFile(ctx context.Context, req *fileservice.CreateFileRequ
 
 // Implement the UploadFile RPC method
 func (s *server) UploadFile(stream fileservice.UploadFile_UploadFileServer) error {
-	var fileChunks []fileservice.FileData
+	var fileChunks []*fileservice.FileData
 	for {
 		chunk, err := stream.Recv()
 		if err == io.EOF {
@@ -35,7 +37,7 @@ func (s *server) UploadFile(stream fileservice.UploadFile_UploadFileServer) erro
 		if err != nil {
 			return err
 		}
-		fileChunks = append(fileChunks, *chunk)
+		fileChunks = append(fileChunks, chunk)
 	}
 
 	fmt.Printf("Received file with %d chunks\n", len(fileChunks))

@@ -1,4 +1,4 @@
-module stodis
+module github.com/stodis/stodis
 
 go 1.22.5
 
