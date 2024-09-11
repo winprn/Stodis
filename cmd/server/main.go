@@ -2,11 +2,12 @@ package main
 
 import (
 	"context"
-	"stodis/api/protobuf/services/fileservice" // Import the package where your generated files are located
 	"fmt"
 	"io"
 	"log"
 	"net"
+	"os"
+	"stodis/api/protobuf/services/fileservice" // Import the package where your generated files are located
 
 	"google.golang.org/grpc"
 )
@@ -43,8 +44,12 @@ func (s *server) UploadFile(stream fileservice.UploadFile_UploadFileServer) erro
 }
 
 func main() {
-	// Set up a connection to the server.
-	lis, err := net.Listen("tcp", ":50051")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "50051"
+	}
+
+	lis, err := net.Listen("tcp", port)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
@@ -56,7 +61,7 @@ func main() {
 	fileservice.RegisterUploadFileServer(s, &server{})
 
 	// Start the server
-	fmt.Println("Server is running on port :50051")
+	fmt.Println("Server is running on port ", port)
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
