@@ -1,5 +1,5 @@
-package service
+package handler
 
-type FileService interface {
+type StorageHandler interface {
 	UploadFile(file []byte, name string) (string, error)
 }

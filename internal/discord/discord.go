@@ -3,22 +3,22 @@ package discord
 import (
 	"bytes"
 
-	service "github.com/stodis/stodis/internal/service"
+	"github.com/stodis/stodis/internal/handler"
 )
 
-type DiscordFileService struct {
+type DiscordHandler struct {
 	bot     *Bot
 	channel string
 }
 
-func NewDiscordFileService(bot *Bot, channel string) *DiscordFileService {
-	return &DiscordFileService{
+func NewDiscordHandler(bot *Bot, channel string) *DiscordHandler {
+	return &DiscordHandler{
 		bot:     bot,
 		channel: channel,
 	}
 }
 
-func (s *DiscordFileService) UploadFile(file []byte, name string) (string, error) {
+func (s *DiscordHandler) UploadFile(file []byte, name string) (string, error) {
 	data, err := s.bot.Session.ChannelFileSend(s.channel, name, bytes.NewReader(file))
 	if err != nil {
 		return "", err
@@ -27,4 +27,4 @@ func (s *DiscordFileService) UploadFile(file []byte, name string) (string, error
 	return data.ID, nil
 }
 
-var _ service.FileService = &DiscordFileService{}
+var _ handler.StorageHandler = &DiscordHandler{}
