@@ -1,0 +1,20 @@
+version: "3"
+services:
+  server:
+    image: "winprn/stodis:latest"
+    container_name: "stodis"
+    ports:
+      - "50051:50051"
+
+  server-dev:
+    image: "winprn/stodis:dev"
+    container_name: "stodis-dev"
+    ports:
+      - "50052:50051"
+
+  watchtower:
+    image: "containrrr/watchtower"
+    container_name: "watchtower"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    command: stodis stodis-dev
