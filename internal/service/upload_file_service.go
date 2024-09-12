@@ -16,6 +16,12 @@ const (
 
 type Server struct {
 	fileservice.UnimplementedUploadFileServer
+
+	fileService FileService
+}
+
+func NewServer(fileService FileService) *Server {
+	return &Server{fileService: fileService}
 }
 
 // Implement the CreateFile RPC method
@@ -65,6 +71,9 @@ func (s *Server) UploadFile(stream fileservice.UploadFile_UploadFileServer) erro
 	}
 	fmt.Printf("Number of chunks: %d\n", len(chunks))
 	for _, chunk := range chunks {
+		if _, err := s.fileService.UploadFile(chunk.Bytes(), "testfile.txt"); err != nil {
+			return err
+		}
 		fmt.Printf("Chunk: %s\n", chunk.String())
 	}
 	fmt.Printf("Received file with %d chunks\n", len(fileChunks))

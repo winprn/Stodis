@@ -32,10 +32,10 @@ func Serve() {
 		log.Fatalf("failed to create discord bot: %v", err)
 	}
 
-	_ = discord.NewDiscordFileService(disc, "1278013883973632071")
+	discodHandler := discord.NewDiscordFileService(disc, "1278013883973632071")
 
 	// Register the server with the gRPC server
-	fileservice.RegisterUploadFileServer(s, &service.Server{})
+	fileservice.RegisterUploadFileServer(s, service.NewServer(discodHandler))
 	reflection.Register(s)
 
 	// Start the server

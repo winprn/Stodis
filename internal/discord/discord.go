@@ -2,6 +2,7 @@ package discord
 
 import (
 	"bytes"
+	"log"
 
 	service "github.com/stodis/stodis/internal/service"
 )
@@ -19,6 +20,7 @@ func NewDiscordFileService(bot *Bot, channel string) *DiscordFileService {
 }
 
 func (s *DiscordFileService) UploadFile(file []byte, name string) (string, error) {
+	log.Printf("Uploading file %s to Discord\n", name)
 	data, err := s.bot.Session.ChannelFileSend(s.channel, name, bytes.NewReader(file))
 	if err != nil {
 		return "", err
