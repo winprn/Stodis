@@ -20,7 +20,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: build
-        run: docker build . -t winprn/stodis:dev
+        run: docker build . -t winprn/stodis:dev --build-arg DISCORD_BOT_TOKEN=${{ secrets.DISCORD_BOT_TOKEN }}
 
       - name: push
         run: docker push winprn/stodis:dev
