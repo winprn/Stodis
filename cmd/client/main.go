@@ -23,7 +23,7 @@ func main() {
 
 	// Create the file on the server by calling CreateFile
 	createFileReq := &fileservice.CreateFileRequest{
-		FileName: "testfile.txt",
+		FileName: "100MB_file.bin",
 		FileSize: 1024,                       // Size of the file in bytes
 		FileType: fileservice.FileType_image, // Specify the file type (image, document, media)
 	}
@@ -34,7 +34,7 @@ func main() {
 	fmt.Printf("File created with UUID: %s\n", createFileResp.Uuid)
 
 	// Open the file to be uploaded
-	filePath := "test.txt"
+	filePath := "100MB_file.bin"
 	file, err := os.Open(filePath)
 	if err != nil {
 		log.Fatalf("failed to open file: %v", err)

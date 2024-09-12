@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/stodis/stodis/api/protobuf/services/fileservice"
@@ -17,11 +18,11 @@ const (
 type Server struct {
 	fileservice.UnimplementedUploadFileServer
 
-	fileService FileService
+	discordService FileService
 }
 
-func NewServer(fileService FileService) *Server {
-	return &Server{fileService: fileService}
+func NewServer(discordService FileService) *Server {
+	return &Server{discordService: discordService}
 }
 
 // Implement the CreateFile RPC method
@@ -43,10 +44,6 @@ func storeChunk(chunks *[]bytes.Buffer, buffer *bytes.Buffer, chunk []byte) {
 			buffer.Reset()
 		}
 		if startIndex == len(chunk) {
-			if buffer.Len() > 0 {
-				*chunks = append(*chunks, *buffer)
-				buffer.Reset()
-			}
 			break
 		}
 	}
@@ -60,7 +57,6 @@ func (s *Server) UploadFile(stream fileservice.UploadFile_UploadFileServer) erro
 	for {
 		chunk, err := stream.Recv()
 		if err == io.EOF {
-			// End of file stream
 			break
 		}
 		if err != nil {
@@ -69,13 +65,18 @@ func (s *Server) UploadFile(stream fileservice.UploadFile_UploadFileServer) erro
 		fileChunks = append(fileChunks, chunk)
 		storeChunk(&chunks, &buffer, chunk.GetChunk())
 	}
-	fmt.Printf("Number of chunks: %d\n", len(chunks))
-	for _, chunk := range chunks {
-		if _, err := s.fileService.UploadFile(chunk.Bytes(), "testfile.txt"); err != nil {
+	if buffer.Len() > 0 {
+		chunks = append(chunks, buffer)
+	}
+	startTime := time.Now()
+	for index, chunk := range chunks {
+		fileName := fmt.Sprintf("%s-%d", fileChunks[0].GetFileId(), index)
+		if _, err := s.discordService.UploadFile(chunk.Bytes(), fileName); err != nil {
 			return err
 		}
-		fmt.Printf("Chunk: %s\n", chunk.String())
 	}
+	endTime := time.Now()
+	fmt.Printf("Time taken to upload file: %v second\n", endTime.Sub(startTime))
 	fmt.Printf("Received file with %d chunks\n", len(fileChunks))
 	return stream.SendAndClose(&fileservice.FileUploadResponse{Message: "File uploaded successfully", Success: true})
 }
