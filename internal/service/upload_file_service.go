@@ -70,8 +70,8 @@ func (s *Server) UploadFile(stream fileservice.UploadFile_UploadFileServer) erro
 		storeChunk(&chunks, &buffer, chunk.GetChunk())
 	}
 	fmt.Printf("Number of chunks: %d\n", len(chunks))
-	for _, chunk := range chunks {
-		if _, err := s.fileService.UploadFile(chunk.Bytes(), "testfile.txt"); err != nil {
+	for i, chunk := range chunks {
+		if _, err := s.fileService.UploadFile(chunk.Bytes(), fmt.Sprintf("%s_%d", fileChunks[i].FileId, fileChunks[i].ChunkTh)); err != nil {
 			return err
 		}
 		fmt.Printf("Chunk: %s\n", chunk.String())
