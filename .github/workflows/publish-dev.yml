@@ -1,9 +1,9 @@
-name: 'publish'
+name: 'publish-dev'
 
 on:
   push:
     branches:
-      - master
+      - dev
   workflow_dispatch:
 
 jobs:
