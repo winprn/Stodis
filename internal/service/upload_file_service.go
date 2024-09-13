@@ -55,10 +55,8 @@ func (s *Server) storeChunk(buffer *bytes.Buffer, chunk []byte, fileId string, c
 		buffer.Write(chunk[startIndex : startIndex+writeSize])
 		startIndex += writeSize
 		if buffer.Len() == chunkSize {
-			data := new(bytes.Buffer)
-			io.Copy(data, buffer)
 			s.chunks <- fileData{
-				data:    *data,
+				data:    deepCopyBuffer(buffer),
 				chunkTh: *chunkTh,
 				fileId:  fileId,
 			}
@@ -85,7 +83,7 @@ func (s *Server) UploadFile(stream fileservice.UploadFile_UploadFileServer) erro
 			if buffer.Len() > 0 {
 				s.chunks <- fileData{
 					fileId:  id,
-					data:    buffer,
+					data:    deepCopyBuffer(&buffer),
 					chunkTh: chunkTh,
 				}
 			}
@@ -111,10 +109,14 @@ func (s *Server) UploadFile(stream fileservice.UploadFile_UploadFileServer) erro
 func (s *Server) flush(botId int) (err error) {
 	for chunk := range s.chunks {
 		fileName := fmt.Sprintf("%s-%d", chunk.fileId, chunk.chunkTh)
-		data := chunk.data.Bytes()
-		if _, err := s.discordService[botId].UploadFile(data, fileName); err != nil {
+		if _, err := s.discordService[botId].UploadFile(chunk.data.Bytes(), fileName); err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func deepCopyBuffer(buf *bytes.Buffer) bytes.Buffer {
+
+	return *bytes.NewBuffer(buf.Bytes())
 }
