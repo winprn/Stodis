@@ -113,7 +113,9 @@ func (s *Server) flush(botId int) (err error) {
 		fileName := fmt.Sprintf("%s-%d", chunk.fileId, chunk.chunkTh)
 		data := chunk.data.Bytes()
 		if _, err := s.discordService[botId].UploadFile(data, fileName); err != nil {
-			return err
+			log.Printf("failed to upload file: %v\n", err)
+			s.chunks <- chunk
+			time.Sleep(1 * time.Second)
 		}
 	}
 	return nil
