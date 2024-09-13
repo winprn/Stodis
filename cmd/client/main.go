@@ -82,5 +82,5 @@ func main() {
 
 	client := fileservice.NewUploadFileClient(conn)
 	// uploadFile("test.txt", &client)
-	uploadFile("30MB_file.bin", &client)
+	uploadFile("104MB_file.bin", &client)
 }
