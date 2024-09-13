@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"strings"
 
 	"github.com/stodis/stodis/api/protobuf/services/fileservice"
 	"github.com/stodis/stodis/internal/discord"
@@ -13,9 +14,7 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-var DiscordToken []string = []string{
-	
-}
+var DiscordToken []string
 
 func createDiscordBots() ([]*discord.Bot, error) {
 	var bots []*discord.Bot
@@ -48,6 +47,8 @@ func Serve() {
 	if port == "" {
 		port = "50051"
 	}
+
+	DiscordToken = strings.Split(os.Getenv("DISCORD_BOT_TOKEN"), ",")
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", port))
 	if err != nil {

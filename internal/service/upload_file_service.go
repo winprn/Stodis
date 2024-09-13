@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"time"
 
 	"github.com/google/uuid"
@@ -32,10 +33,14 @@ type Server struct {
 func NewServer(discordService []FileService) *Server {
 	server := &Server{
 		discordService: discordService,
-		chunks:         make(chan fileData),
+		chunks:         make(chan fileData, 100),
 	}
 	for botId := 0; botId < BotWorker; botId++ {
-		go server.flush(botId)
+		go func(botId int) {
+			if err := server.flush(botId); err != nil {
+				fmt.Println("Error: ", err)
+			}
+		}(botId)
 	}
 	return server
 }
@@ -55,8 +60,10 @@ func (s *Server) storeChunk(buffer *bytes.Buffer, chunk []byte, fileId string, c
 		startIndex += writeSize
 		if buffer.Len() == chunkSize {
 			*chunkTh += 1
+			data := new(bytes.Buffer)
+			io.Copy(data, buffer)
 			s.chunks <- fileData{
-				data:    *buffer,
+				data:    *data,
 				chunkTh: *chunkTh,
 				fileId:  fileId,
 			}
@@ -88,7 +95,7 @@ func (s *Server) UploadFile(stream fileservice.UploadFile_UploadFileServer) erro
 	for {
 		chunk, err := stream.Recv()
 		id := chunk.GetFileId()
-		fmt.Println("Solvent: ", id, " ", cnt)
+		// fmt.Println("Solvent: ", id, " ", cnt)
 		cnt += 1
 		if err == io.EOF {
 			if buffer.Len() > 0 {
@@ -98,6 +105,7 @@ func (s *Server) UploadFile(stream fileservice.UploadFile_UploadFileServer) erro
 					chunkTh: chunkTh,
 				}
 			}
+			log.Printf("File upload completed\n")
 			break
 		}
 		if err != nil {
