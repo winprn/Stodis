@@ -13,6 +13,7 @@ type DiscordFileService struct {
 }
 
 func NewDiscordFileService(bot *Bot, channel string) *DiscordFileService {
+	bot.Session.Debug = true
 	return &DiscordFileService{
 		bot:     bot,
 		channel: channel,
