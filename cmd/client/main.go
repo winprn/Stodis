@@ -6,50 +6,39 @@ import (
 	"io"
 	"log"
 	"os"
+	"time"
 
 	"github.com/stodis/stodis/api/protobuf/services/fileservice"
 	"google.golang.org/grpc"
 )
 
-func main() {
-	// Connect to the gRPC server
-	conn, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("failed to connect to server: %v", err)
-	}
-	defer conn.Close()
-
-	client := fileservice.NewUploadFileClient(conn)
-
-	// Create the file on the server by calling CreateFile
+func uploadFile(fileName string, client *fileservice.UploadFileClient) error {
 	createFileReq := &fileservice.CreateFileRequest{
-		FileName: "100MB_file.bin",
+		FileName: fileName,
 		FileSize: 1024,                       // Size of the file in bytes
 		FileType: fileservice.FileType_image, // Specify the file type (image, document, media)
 	}
-	createFileResp, err := client.CreateFile(context.Background(), createFileReq)
+	createFileResp, err := (*client).CreateFile(context.Background(), createFileReq)
 	if err != nil {
 		log.Fatalf("failed to create file: %v", err)
+		return err
 	}
 	fmt.Printf("File created with UUID: %s\n", createFileResp.Uuid)
-
-	// Open the file to be uploaded
-	filePath := "100MB_file.bin"
-	file, err := os.Open(filePath)
+	file, err := os.Open(fileName)
 	if err != nil {
 		log.Fatalf("failed to open file: %v", err)
+		return err
 	}
 	defer file.Close()
-
-	// Prepare file for upload in chunks
-	stream, err := client.UploadFile(context.Background())
+	stream, err := (*client).UploadFile(context.Background())
 	if err != nil {
 		log.Fatalf("failed to start file upload: %v", err)
+		return err
 	}
-
 	buffer := make([]byte, 64*1024) // 64 KB chunk size
 	chunkCounter := int32(0)        // Keep track of the chunk number
-
+	// return nil
+	startTime := time.Now()
 	for {
 		n, err := file.Read(buffer)
 		if err == io.EOF {
@@ -78,4 +67,20 @@ func main() {
 	}
 
 	fmt.Printf("File upload response: %s, success: %v\n", resp.Message, resp.Success)
+	endTime := time.Now()
+	fmt.Printf("Time taken to upload file: %v second\n", endTime.Sub(startTime))
+	return nil
+}
+
+func main() {
+	// Connect to the gRPC server
+	conn, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("failed to connect to server: %v", err)
+	}
+	defer conn.Close()
+
+	client := fileservice.NewUploadFileClient(conn)
+	// uploadFile("test.txt", &client)
+	uploadFile("100MB_file_2.bin", &client)
 }
