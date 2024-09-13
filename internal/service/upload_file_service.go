@@ -37,6 +37,11 @@ func NewServer(discordService []FileService) *Server {
 	}
 	for botId := 0; botId < BotWorker; botId++ {
 		go server.flush(botId)
+		// go func(botId int) {
+		// 	if err := server.flush(botId); err != nil {
+		// 		fmt.Println("Error: ", err)
+		// 	}
+		// }(botId)
 	}
 	return server
 }
@@ -117,6 +122,7 @@ func (s *Server) flush(botId int) (err error) {
 }
 
 func deepCopyBuffer(buf *bytes.Buffer) bytes.Buffer {
-
-	return *bytes.NewBuffer(buf.Bytes())
+	data := new(bytes.Buffer)
+	io.Copy(data, buf)
+	return *data
 }
