@@ -36,11 +36,7 @@ func NewServer(discordService []FileService) *Server {
 		chunks:         make(chan fileData, 100),
 	}
 	for botId := 0; botId < BotWorker; botId++ {
-		go func(botId int) {
-			if err := server.flush(botId); err != nil {
-				fmt.Println("Error: ", err)
-			}
-		}(botId)
+		go server.flush(botId)
 	}
 	return server
 }
@@ -59,7 +55,6 @@ func (s *Server) storeChunk(buffer *bytes.Buffer, chunk []byte, fileId string, c
 		buffer.Write(chunk[startIndex : startIndex+writeSize])
 		startIndex += writeSize
 		if buffer.Len() == chunkSize {
-			*chunkTh += 1
 			data := new(bytes.Buffer)
 			io.Copy(data, buffer)
 			s.chunks <- fileData{
@@ -67,6 +62,7 @@ func (s *Server) storeChunk(buffer *bytes.Buffer, chunk []byte, fileId string, c
 				chunkTh: *chunkTh,
 				fileId:  fileId,
 			}
+			*chunkTh += 1
 			buffer.Reset()
 		}
 		if startIndex == len(chunk) {
@@ -75,27 +71,15 @@ func (s *Server) storeChunk(buffer *bytes.Buffer, chunk []byte, fileId string, c
 	}
 }
 
-func (s *Server) flush(botId int) (err error) {
-	for chunk := range s.chunks {
-		fileName := fmt.Sprintf("%s-%d", chunk.fileId, chunk.chunkTh)
-		data := chunk.data.Bytes()
-		if _, err := s.discordService[botId].UploadFile(data, fileName); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 // Implement the UploadFile RPC method with concurrency
 func (s *Server) UploadFile(stream fileservice.UploadFile_UploadFileServer) error {
 	var buffer bytes.Buffer
 	chunkTh := int32(0)
 	startTime := time.Now()
 	cnt := 0
+	id := "-1"
 	for {
 		chunk, err := stream.Recv()
-		id := chunk.GetFileId()
-		// fmt.Println("Solvent: ", id, " ", cnt)
 		cnt += 1
 		if err == io.EOF {
 			if buffer.Len() > 0 {
@@ -108,13 +92,29 @@ func (s *Server) UploadFile(stream fileservice.UploadFile_UploadFileServer) erro
 			log.Printf("File upload completed\n")
 			break
 		}
+		if id == "-1" {
+			id = chunk.GetFileId()
+		} else if id != chunk.GetFileId() {
+			return fmt.Errorf("file id mismatch")
+		}
 		if err != nil {
 			return err
 		}
 		s.storeChunk(&buffer, chunk.GetChunk(), id, &chunkTh)
 	}
 	endTime := time.Now()
-	fmt.Printf("Time taken to upload file: %v second\n", endTime.Sub(startTime))
+	fmt.Printf("Time taken to upload file: %v\n", endTime.Sub(startTime))
 
 	return stream.SendAndClose(&fileservice.FileUploadResponse{Message: "File uploaded successfully", Success: true})
+}
+
+func (s *Server) flush(botId int) (err error) {
+	for chunk := range s.chunks {
+		fileName := fmt.Sprintf("%s-%d", chunk.fileId, chunk.chunkTh)
+		data := chunk.data.Bytes()
+		if _, err := s.discordService[botId].UploadFile(data, fileName); err != nil {
+			return err
+		}
+	}
+	return nil
 }

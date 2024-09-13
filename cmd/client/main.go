@@ -68,7 +68,7 @@ func uploadFile(fileName string, client *fileservice.UploadFileClient) error {
 
 	fmt.Printf("File upload response: %s, success: %v\n", resp.Message, resp.Success)
 	endTime := time.Now()
-	fmt.Printf("Time taken to upload file: %v second\n", endTime.Sub(startTime))
+	fmt.Printf("Time taken to upload file: %v\n", endTime.Sub(startTime))
 	return nil
 }
 
@@ -82,5 +82,5 @@ func main() {
 
 	client := fileservice.NewUploadFileClient(conn)
 	// uploadFile("test.txt", &client)
-	uploadFile("100MB_file_2.bin", &client)
+	uploadFile("30MB_file.bin", &client)
 }
