@@ -37,11 +37,6 @@ func NewServer(discordService []FileService) *Server {
 	}
 	for botId := 0; botId < BotWorker; botId++ {
 		go server.flush(botId)
-		// go func(botId int) {
-		// 	if err := server.flush(botId); err != nil {
-		// 		fmt.Println("Error: ", err)
-		// 	}
-		// }(botId)
 	}
 	return server
 }
