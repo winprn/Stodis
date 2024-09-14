@@ -3,6 +3,7 @@ package discord
 import (
 	"bytes"
 	"log"
+	"time"
 
 	service "github.com/stodis/stodis/internal/service"
 )
@@ -21,12 +22,15 @@ func NewDiscordFileService(bot *Bot, channel string) *DiscordFileService {
 }
 
 func (s *DiscordFileService) UploadFile(file []byte, name string) (string, error) {
-	log.Printf("Uploading file %s to Discord\n", name)
-	data, err := s.bot.Session.ChannelFileSend(s.channel, name, bytes.NewReader(file))
+	log.Printf("%s is uploading file %s to Discord\n", s.bot.botID, name)
+	startTime := time.Now()
+	data, err := s.bot.session.ChannelFileSend(s.channel, name, bytes.NewReader(file))
+	endTime := time.Now()
 	if err != nil {
+		log.Printf("%s failed to upload file %s to Discord: %v\n", s.bot.botID, name, err)
 		return "", err
 	}
-
+	log.Printf("%s uploaded file %s to Discord with ID %s in %v\n", s.bot.botID, name, data.ID, endTime.Sub(startTime))
 	return data.ID, nil
 }
 

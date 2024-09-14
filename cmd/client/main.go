@@ -82,5 +82,7 @@ func main() {
 
 	client := fileservice.NewUploadFileClient(conn)
 	// uploadFile("test.txt", &client)
-	uploadFile("104MB_file.bin", &client)
+	for i := 0; i < 5; i++ {
+		uploadFile("104MB_file.bin", &client)
+	}
 }

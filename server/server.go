@@ -18,8 +18,9 @@ var DiscordToken []string
 
 func createDiscordBots() ([]*discord.Bot, error) {
 	var bots []*discord.Bot
-	for _, token := range DiscordToken {
-		disc, err := discord.NewBot(discord.NewBotConfig(token))
+	for index, token := range DiscordToken {
+		botName := fmt.Sprintf("Bot_%d", index)
+		disc, err := discord.NewBot(botName, token)
 		if err != nil {
 			log.Fatalf("failed to create discord bot: %v", err)
 			return nil, err
@@ -57,13 +58,9 @@ func Serve() {
 
 	// Create a new gRPC server
 	s := grpc.NewServer()
-	// token := os.Getenv("DISCORD_BOT_TOKEN")
-	// disc, err := discord.NewBot(discord.NewBotConfig(token))
 	if err != nil {
 		log.Fatalf("failed to create discord bot: %v", err)
 	}
-	// discordBots := createDiscordBots()
-	// discodHandler := discord.NewDiscordFileService(disc, "1278013883973632071")
 	discordHandler, err := createDiscordHandler()
 	if err != nil {
 		log.Fatalf("failed to create discord handler: %v", err)

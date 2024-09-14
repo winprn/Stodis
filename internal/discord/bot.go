@@ -5,16 +5,18 @@ import (
 )
 
 type Bot struct {
-	Session *discordgo.Session
+	botID string
+	session *discordgo.Session
 }
 
-func NewBot(config *BotConfig) (*Bot, error) {
-	session, err := discordgo.New("Bot " + config.Token)
+func NewBot(botID, token string) (*Bot, error) {
+	session, err := discordgo.New("Bot " + token)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Bot{
-		Session: session,
+		botID: botID,
+		session: session,
 	}, nil
 }

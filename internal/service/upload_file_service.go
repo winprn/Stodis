@@ -114,6 +114,9 @@ func (s *Server) flush(botId int) (err error) {
 			s.chunks <- chunk
 			time.Sleep(1 * time.Second)
 		}
+		if len(s.chunks) == 0 {
+			log.Println("All chunks are uploaded")
+		}
 	}
 	return nil
 }
