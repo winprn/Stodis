@@ -1,13 +1,14 @@
-name: 'publish'
+name: 'publish-dev'
 
 on:
   push:
     branches:
-      - master
+      - dev
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: 'self-hosted'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
