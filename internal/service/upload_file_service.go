@@ -13,7 +13,8 @@ import (
 )
 
 const (
-	chunkSize = 25 * 1024 * 1024 // 25 MB
+	ChunkSize = 25 * 1024 * 1024 // 25 MB
+	ChannelBufferSize = 100
 	BotWorker = 2
 )
 
@@ -33,7 +34,7 @@ type Server struct {
 func NewServer(discordService []FileService) *Server {
 	server := &Server{
 		discordService: discordService,
-		chunks:         make(chan fileData, 100),
+		chunks:         make(chan fileData, ChannelBufferSize),
 	}
 	for botId := 0; botId < BotWorker; botId++ {
 		go server.flush(botId)
@@ -51,10 +52,10 @@ func (s *Server) CreateFile(ctx context.Context, req *fileservice.CreateFileRequ
 func (s *Server) storeChunk(buffer *bytes.Buffer, chunk []byte, fileId string, chunkTh *int32) {
 	startIndex := 0
 	for {
-		writeSize := min(len(chunk), chunkSize-buffer.Len())
-		buffer.Write(chunk[startIndex : startIndex+writeSize])
+		writeSize := min(len(chunk), ChunkSize - buffer.Len())
+		buffer.Write(chunk[startIndex : startIndex + writeSize])
 		startIndex += writeSize
-		if buffer.Len() == chunkSize {
+		if buffer.Len() == ChunkSize {
 			s.chunks <- fileData{
 				data:    deepCopyBuffer(buffer),
 				chunkTh: *chunkTh,
